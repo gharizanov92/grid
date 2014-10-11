@@ -1,9 +1,10 @@
 <div style="width: {{width}}">
+    <div compile="html"></div>
     <div style="width: {{width}}; height:{{height}}; overflow:scroll">
         <table class="table table-striped table-hover table-bordered table-condensed table-responsive">
             <thead>
                 <tr>
-                    <th ng-repeat="column in columns" style="width:50px">
+                    <th ng-repeat="column in columns" width="{{column.width}}">
                         <div class="resize-handle" />
                         <span ng-bind = "column.header"/>
                     </th>
@@ -11,10 +12,12 @@
             </thead>
             <tbody>
                 <tr ng-repeat = "row in data">
-                    <td ng-repeat="column in columns">
-                        <p data-ng-bind-html="column.template"></p>
+                    <td ng-repeat="column in columns" width="{{column.width}}">
+                        <div compile="column.template"/>
                     </td>
                 </tr>
+<!--                <tr ng-repeat = "row in data" compile="rowtemplate">
+                </tr>-->
             </tbody>
         </table>
     </div>

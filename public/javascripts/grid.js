@@ -1,4 +1,31 @@
-app.directive('grid', function() {
+var gridModule = angular.module("grid", ['ui.bootstrap'], function($compileProvider) {
+    // configure new 'compile' directive by passing a directive
+    // factory function. The factory function injects the '$compile'
+    $compileProvider.directive('compile', function($compile) {
+        // directive factory creates a link function
+        return function(scope, element, attrs) {
+            scope.$watch(
+                function(scope) {
+                    // watch the 'compile' expression for changes
+                    return scope.$eval(attrs.compile);
+                },
+                function(value) {
+                    // when the 'compile' expression changes
+                    // assign it into the current DOM
+                    element.html(value);
+
+                    // compile the new DOM and link it to the current
+                    // scope.
+                    // NOTE: we only compile .childNodes so that
+                    // we don't get into infinite loop compiling ourselves
+                    $compile(element.contents())(scope);
+                }
+            );
+        };
+    });
+});
+
+gridModule.directive('grid', function() {
     return {
         restrict: 'E',
         templateUrl: 'javascripts/gridTemplate.html',
@@ -10,8 +37,7 @@ app.directive('grid', function() {
         },
         replace: true,
         transclude: true,
-        controller: function ($scope, $http, $element, $sce, $parse) {
-
+        controller: function ($scope, $http, $element, $sce, $parse, $compile) {
             //inherit everything from parent scope
             var mergedScopes = {};
             angular.extend(mergedScopes, $scope.$parent);
@@ -33,25 +59,20 @@ app.directive('grid', function() {
             $scope.pageSize = 250;
             $scope.columns = [];
 
-            for(var i = 0; i < 11; i++){
-                $scope.headers.push("header " + (i + 1));
-            }
-
             this.addColumn = function (column) {
-                console.log(column);
                 if(column.template == '') {
                     $scope.columns.push({
                         header: column.header,
                         width: column.width,
                         field: column.binding,
-                        template:$sce.trustAsHtml('{{row[column.field]}}')
+                        template:'{{row[column.field]}}'
                     });
                 } else {
                     $scope.columns.push({
                         header: column.header,
                         width: column.width,
                         field: column.binding,
-                        template:$sce.trustAsHtml('<div>' + column.template + '</div>')
+                        template:'<div>' + column.template + '</div>'
                     });
                 }
             };
@@ -67,11 +88,26 @@ app.directive('grid', function() {
                 });
 
             $scope.fetchData();
+        },
+        link:function(scope, element, attrs){
+            scope.fetchData();
+            console.log(scope.data);
+            var rowtemplate = "";
+            for(var column in scope.columns){
+                rowtemplate += "<td>" + scope.columns[column].template + "</td>" + "\n";
+            }
+            scope.rowtemplate = rowtemplate;
         }
     };
 });
 
-app.directive("column", function () {
+gridModule.filter('unsafe', function($sce) {
+    return function(val) {
+        return $sce.trustAsHtml(val);
+    };
+});
+
+gridModule.directive("column", function () {
     return {
         require: "^grid",
         restrict: "E",
@@ -85,7 +121,6 @@ app.directive("column", function () {
             click: '&'
         },
         link: function (scope, element, attrs, grid) {
-            console.log(scope);
             scope.template = element[0].innerHTML;
             grid.addColumn(scope);
         }
