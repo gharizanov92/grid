@@ -27,6 +27,7 @@ app.controller("controller", ["$scope", "$http", function($scope, $http){
 
     $scope.update = function(arg){
         console.log(arg);
+
     }
 }]);
 
