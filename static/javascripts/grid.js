@@ -28,7 +28,7 @@ var gridModule = angular.module("grid", ['ui.bootstrap'], function($compileProvi
 gridModule.directive('grid', function() {
     return {
         restrict: 'E',
-        templateUrl: 'javascripts/gridTemplate.html',
+        template: '<div style="width: {{width}}"><div style="width: {{width}}; height:{{height}}; overflow:scroll"><table class="table table-striped table-hover table-bordered table-condensed table-responsive"><thead><tr><th ng-repeat="column in columns" width="{{column.width}}"><div class="resize-handle" /><span ng-bind = "column.header"/></th></tr></thead><tbody><tr ng-repeat = "row in data" compile="rowtemplate"></tr></tbody></table></div><pagination style="float:right" total-items="totalServerItems" ng-model="currentPage" max-size="10" class="pagination-sm" boundary-links="true"rotate="false" num-pages="totalPages" items-per-page="pageSize"></pagination><img ng-if="!data" src="/images/loading.gif"/><div ng-transclude/></div>',
         scope: {
             url: '@',
             width: '@',
@@ -83,10 +83,14 @@ gridModule.directive('grid', function() {
                 $scope.fetchData();
             });
 
+            $scope.totalServerItems = 8000;
+
+/*
             $http({method: 'GET', url: '/books/total'}).
                 success(function(total) {
                     $scope.totalServerItems = total;
                 });
+*/
 
             $scope.fetchData();
         },
