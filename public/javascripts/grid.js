@@ -143,14 +143,13 @@ gridModule.directive('resizable', function($document, $window) {
 
             while(node[0] != undefined){
                 tableOffset += node[0].offsetLeft;
-                console.log
+
                 node = angular.element(node[0].offsetParent);
             }
 
             node = $element;
             while(node[0] != undefined){
                 columnOffset += node[0].offsetLeft;
-                console.log
                 node = angular.element(node[0].offsetParent);
             }
 
@@ -158,6 +157,11 @@ gridModule.directive('resizable', function($document, $window) {
             $scope.columnOffset = columnOffset;
             $scope.startX = $window.screenLeft + $element[0].offsetLeft;
             $scope.min = 0;
+
+            $scope.calculateColumnHeaderWidth = function(columnElement){
+                var header = columnElement[0].children[0].children[0];
+                return header.offsetWidth + header.offsetLeft * 2
+            }
 
         },
         link:function(scope, element, attr){
@@ -170,18 +174,13 @@ gridModule.directive('resizable', function($document, $window) {
             setTimeout(function() {
                 //var previousColumn = angular.element(element[0].previousElementSibling);
                 var previousColumn = element;
-                console.log(previousColumn);
                 if (previousColumn[0] != undefined) {
-                    var header = element[0].children[0].children[0];
-                    console.log(header);
-                    scope.min = header.offsetWidth + header.offsetLeft * 2;
+                    scope.min = scope.calculateColumnHeaderWidth(previousColumn);
                 }
             }, 150);
 
             element.on('mousedown', function(event) {
                 event.preventDefault();
-
-                console.log(scope.min);
 
                 currentWidth = element[0].offsetWidth;
                 maxWidth = angular.element(element[0].nextElementSibling)[0].offsetWidth + currentWidth;
@@ -218,8 +217,10 @@ gridModule.directive('resizable', function($document, $window) {
             function mousemove(event) {
                 x = event.screenX - startX - element[0].offsetLeft + scope.columnOffset;
 
-                if(x > maxWidth){
-                    x = maxWidth;
+                var nextColumnHeaderWidth = scope.calculateColumnHeaderWidth(angular.element(element[0].nextElementSibling));
+
+                if(x > maxWidth  - nextColumnHeaderWidth){
+                    x = maxWidth - nextColumnHeaderWidth;
                 }
 
                 if(x < scope.min){
