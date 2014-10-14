@@ -132,41 +132,54 @@ gridModule.directive('resizable', function($document, $window) {
         transclude:true,
         template: '<div ng-transclude/>',
         scope : {},
+        controller: function($scope, $element){
+            var node = angular.element($element[0].offsetParent);
+            var tableOffset = 0;
+            var columnOffset = 0;
+
+            while(node[0] != undefined){
+                tableOffset += node[0].offsetLeft;
+                console.log
+                node = angular.element(node[0].offsetParent);
+            }
+
+            node = $element;
+            while(node[0] != undefined){
+                columnOffset += node[0].offsetLeft;
+                console.log
+                node = angular.element(node[0].offsetParent);
+            }
+
+            $scope.tableOffset = tableOffset;
+            $scope.columnOffset = columnOffset;
+            $scope.startX = $window.screenLeft + $element[0].offsetLeft;
+
+        },
         link:function(scope, element, attr){
-            var startX = $window.screenLeft + element[0].offsetLeft, startY = 0, x = 0, y = 0;
+            var startX = scope.startX;
             var canResize = false;
             var maxWidth = 0;
+            var minWidth = 0;
             var currentWidth = 0;
-            
+
+            console.log(scope.columnOffset);
+
             element.css({
                 position: 'relative'
             });
 
             element.on('mousedown', function(event) {
+                event.preventDefault();
 
-                var counter = 0;
-                var node = undefined;
-
-                /*do{
-                    node = angular.element(element[0].offsetParent);
-                    console.log(node);
-                    counter++;
-                } while(counter < 4)*/
-
-                console.log(counter);
-
-                console.log(element);
                 currentWidth = element[0].offsetWidth;
                 maxWidth = angular.element(element[0].nextElementSibling)[0].offsetWidth + currentWidth;
-                // Prevent default dragging of selected content
-                event.preventDefault();
+
                 scope.canResize = false;
                 //startX = event.screenX - x;
                 //startY = event.screenY - y;
-                startX = $window.screenLeft;
-                console.log(element[0].offsetLeft);
+                var startX = $window.screenLeft + element[0].offsetLeft;
                 var xpos = event.screenX - startX;
-                if(xpos > element[0].offsetWidth - 10){
+                if(xpos + scope.columnOffset > element[0].offsetWidth +scope.columnOffset - 10){
                     scope.canResize = true;
                 } else {
                     scope.canResize = false;
@@ -177,9 +190,7 @@ gridModule.directive('resizable', function($document, $window) {
             });
 
             element.on('mousemove', function(event){
-                var xpos = event.screenX - startX;
-                scope.xpos = xpos;
-                scope.ypos = event.screenY;
+                var xpos = event.screenX - $window.screenLeft + element[0].offsetLeft;
 
                 if( xpos > element[0].offsetWidth - 10){
                     element.css({
@@ -194,8 +205,8 @@ gridModule.directive('resizable', function($document, $window) {
             });
 
             function mousemove(event) {
-                x = event.screenX - startX - element[0].offsetLeft;
-
+                x = event.screenX - startX - element[0].offsetLeft + scope.columnOffset;
+                console.log(startX + "; " + element[0].offsetLeft);
                 if(x > maxWidth){
                     x = maxWidth;
                 }
@@ -207,7 +218,6 @@ gridModule.directive('resizable', function($document, $window) {
                     angular.element(element[0].nextElementSibling).css({
                         width: maxWidth - x + 'px'
                     });
-                    //angular.element(element[0].nextElementSibling).offsetLeft = x;
                 }
 
                 scope.$apply();
