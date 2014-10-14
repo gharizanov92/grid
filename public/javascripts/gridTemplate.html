@@ -6,12 +6,13 @@
             <thead>
                 <tr>
                     <th id="column" ng-repeat="column in columns" style="width:{{column.width}}" resizable>
+                        <!--<div class="resize-handle" />-->
                         <span style="cursor: pointer" ng-bind = "column.header"/>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat = "row in data" compile="rowtemplate" style="overflow-wrap: break-word;">
+                <tr ng-repeat = "row in data" compile="rowtemplate">
                 </tr>
             </tbody>
         </table>

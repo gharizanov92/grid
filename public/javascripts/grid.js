@@ -58,7 +58,7 @@ gridModule.directive('grid', function() {
             $scope.currentPage = 1;
             $scope.pageSize = 250;
             $scope.columns = [];
-            var columnIndex = 0;
+
             this.addColumn = function (column) {
                 if(column.template == '') {
                     $scope.columns.push({
@@ -93,17 +93,11 @@ gridModule.directive('grid', function() {
         link:function(scope, element, attrs){
             var rowtemplate = "";
             for(var column in scope.columns){
-                rowtemplate += "<td width='" + scope.columns[column].width + "'>" + scope.columns[column].template + "</td>" + "\n";
+                rowtemplate += "<td width='" + scope.columns[column].width + "' style=\"white-space: nowrap;overflow: hidden;text-overflow: ellipsis\">" + scope.columns[column].template + "</td>" + "\n";
                 /*rowtemplate += "<td>" + scope.columns[column].template + "</td>" + "\n";*/
             }
             scope.rowtemplate = rowtemplate;
         }
-    };
-});
-
-gridModule.filter('unsafe', function($sce) {
-    return function(val) {
-        return $sce.trustAsHtml(val);
     };
 });
 
@@ -166,10 +160,17 @@ gridModule.directive('resizable', function($document, $window) {
         },
         link:function(scope, element, attr){
             var startX = scope.startX;
-            var canResize = false;
             var maxWidth = 0;
-            var minWidth = 0;
             var currentWidth = 0;
+
+            var columnOffset = 0;
+            node = element;
+            while(node[0] != undefined){
+                columnOffset += node[0].offsetLeft;
+                node = angular.element(node[0].offsetParent);
+            }
+            scope.columnOffset = columnOffset;
+            console.log(scope.columnOffset);
 
             setTimeout(function() {
                 //var previousColumn = angular.element(element[0].previousElementSibling);
@@ -189,7 +190,7 @@ gridModule.directive('resizable', function($document, $window) {
 
                 var startX = $window.screenLeft + element[0].offsetLeft;
                 var xpos = event.screenX - startX;
-                if(xpos + scope.columnOffset > element[0].offsetWidth +scope.columnOffset - 10){
+                if(xpos > element[0].offsetWidth + scope.tableOffset - 10){
                     scope.canResize = true;
                 } else {
                     scope.canResize = false;
@@ -200,9 +201,13 @@ gridModule.directive('resizable', function($document, $window) {
             });
 
             element.on('mousemove', function(event){
-                var xpos = event.screenX - $window.screenLeft + element[0].offsetLeft;
+                var mouse_x = event.screenX - $window.screenLeft;
+                var rightColumnMargin = element[0].offsetWidth + element[0].offsetLeft - 10;
+                //console.log(xpos - scope.tableOffset + ", " + (element[0].offsetWidth + element[0].offsetLeft - 10));
+                //console.log(xpos + ", " +  (element[0].offsetWidth + scope.tableOffset - 10));
+                //if( xpos - scope.columnOffset > element[0].offsetWidth - 10){
+                if( mouse_x - scope.tableOffset > rightColumnMargin){
 
-                if( xpos > element[0].offsetWidth - 10){
                     element.css({
                         cursor: 'w-resize'
                     });
@@ -215,7 +220,7 @@ gridModule.directive('resizable', function($document, $window) {
             });
 
             function mousemove(event) {
-                x = event.screenX - startX - element[0].offsetLeft + scope.columnOffset;
+                x = event.screenX - startX - element[0].offsetLeft + scope.columnOffset -scope.tableOffset;
 
                 var nextColumnHeaderWidth = scope.calculateColumnHeaderWidth(angular.element(element[0].nextElementSibling));
 
@@ -235,14 +240,12 @@ gridModule.directive('resizable', function($document, $window) {
                         width: maxWidth - x + 'px'
                     });
                 }
-
-                //scope.$apply();
             }
 
             function mouseup() {
                 $document.off('mousemove', mousemove);
                 $document.off('mouseup', mouseup);
-                canResize = false;
+                scope.canResize = false;
             }
         }
     }
