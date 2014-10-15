@@ -121,132 +121,82 @@ gridModule.directive("column", function () {
     };
 });
 
-gridModule.directive('resizable', function($document, $window) {
+gridModule.directive('resizable', function($document, $window){
     return {
-        transclude:true,
-        template: '<div ng-transclude/>',
-        scope : {},
-        controller: function($scope, $element){
-            var node = angular.element($element[0].offsetParent);
-            var tableOffset = 0;
-            var columnOffset = 0;
+        scope: {},
+        controller: function($scope, $element, $compile){
+            
+            var width = $element[0].offsetWidth;
+            var parent = angular.element($element[0].parentElement);
+            $scope.handle = angular.element("<div style='float:right'></div>");  
 
-            $element.css({
-                position: 'relative'
-            });
-
-            while(node[0] != undefined){
-                tableOffset += node[0].offsetLeft;
-
-                node = angular.element(node[0].offsetParent);
-            }
-
-            node = $element;
-            while(node[0] != undefined){
-                columnOffset += node[0].offsetLeft;
-                node = angular.element(node[0].offsetParent);
-            }
-
-            $scope.tableOffset = tableOffset;
-            $scope.columnOffset = columnOffset;
-            $scope.startX = $window.screenLeft + $element[0].offsetLeft;
-            $scope.min = 0;
-
-            $scope.calculateColumnHeaderWidth = function(columnElement){
-                var header = columnElement[0].children[0].children[0];
-                return header.offsetWidth + header.offsetLeft * 2
-            }
-
+            //executes when document is ready
+            setTimeout(function(){
+                    var header = $element[0].children[0];
+                    $scope.minWidth = header.offsetWidth + header.offsetLeft * 2 + 10;
+                    $scope.nextElementSibling = angular.element($element[0].nextElementSibling);
+                    $scope.nextElementSiblingWidth = 0;
+                    if($scope.nextElementSibling[0] != undefined){
+                        $scope.nextElementSiblingWidth = $scope.nextElementSibling[0].children[0].offsetWidth + $scope.nextElementSibling[0].children[0].offsetLeft * 2 + 11;
+                    }
+                    $scope.handle.css({
+                        display:"inline-block",
+                        /*border: "1px solid red",*/
+                        cursor: 'w-resize',
+                        "margin-top": -header.offsetTop + 1 + 'px',
+                        "margin-bottom": -header.offsetTop + 1 + 'px',
+                        "margin-right": -header.offsetLeft * 2 + 1 + 'px',
+                        height: header.offsetHeight + header.offsetTop * 2 + 'px',
+                        width: "11px"
+                    });
+                    
+                    $element.append($scope.handle);
+                    $compile($scope.handle)($scope);
+                });
         },
-        link:function(scope, element, attr){
-            var startX = scope.startX;
+        link: function(scope, element){
+            var startX = 0;
             var maxWidth = 0;
-            var currentWidth = 0;
+            var initialWidth = 0;
+            var isResizing = false;
+            var nextColumnHeaderWidth = 0;
 
-            var columnOffset = 0;
-            node = element;
-            while(node[0] != undefined){
-                columnOffset += node[0].offsetLeft;
-                node = angular.element(node[0].offsetParent);
-            }
-            scope.columnOffset = columnOffset;
-            console.log(scope.columnOffset);
-
-            setTimeout(function() {
-                //var previousColumn = angular.element(element[0].previousElementSibling);
-                var previousColumn = element;
-                if (previousColumn[0] != undefined) {
-                    scope.min = scope.calculateColumnHeaderWidth(previousColumn);
-                }
-            }, 150);
-
-            element.on('mousedown', function(event) {
+            angular.element(scope.handle).on('mousedown', function(event) {
                 event.preventDefault();
-
-                currentWidth = element[0].offsetWidth;
-                maxWidth = angular.element(element[0].nextElementSibling)[0].offsetWidth + currentWidth;
-
-                scope.canResize = false;
-
-                var startX = $window.screenLeft + element[0].offsetLeft;
-                var xpos = event.screenX - startX;
-                if(xpos > element[0].offsetWidth + scope.tableOffset - 10){
-                    scope.canResize = true;
-                } else {
-                    scope.canResize = false;
-                }
+                startX = event.screenX;
+                initialWidth = element[0].offsetWidth;
+                maxWidth = scope.nextElementSibling[0].offsetWidth + initialWidth;
 
                 $document.on('mousemove', mousemove);
                 $document.on('mouseup', mouseup);
             });
 
-            element.on('mousemove', function(event){
-                var mouse_x = event.screenX - $window.screenLeft;
-                var rightColumnMargin = element[0].offsetWidth + element[0].offsetLeft - 10;
-                //console.log(xpos - scope.tableOffset + ", " + (element[0].offsetWidth + element[0].offsetLeft - 10));
-                //console.log(xpos + ", " +  (element[0].offsetWidth + scope.tableOffset - 10));
-                //if( xpos - scope.columnOffset > element[0].offsetWidth - 10){
-                if( mouse_x - scope.tableOffset > rightColumnMargin){
-
-                    element.css({
-                        cursor: 'w-resize'
-                    });
-                    
-                } else {
-                    element.css({
-                        cursor: 'auto'
-                    });
-                }
-            });
-
             function mousemove(event) {
-                x = event.screenX - startX - element[0].offsetLeft + scope.columnOffset -scope.tableOffset;
-
-                var nextColumnHeaderWidth = scope.calculateColumnHeaderWidth(angular.element(element[0].nextElementSibling));
-
-                if(x > maxWidth  - nextColumnHeaderWidth){
-                    x = maxWidth - nextColumnHeaderWidth;
+                x = event.screenX - startX;
+                var newWidth = initialWidth + x;
+                
+                if(newWidth < scope.minWidth){
+                    newWidth = scope.minWidth;
                 }
 
-                if(x < scope.min){
-                    x = scope.min;
+                if(newWidth > maxWidth - scope.nextElementSiblingWidth){
+                    newWidth = maxWidth - scope.nextElementSiblingWidth;
                 }
 
-                if(scope.canResize){
-                    element.css({
-                        width: x + 'px'
-                    });
-                    angular.element(element[0].nextElementSibling).css({
-                        width: maxWidth - x + 'px'
-                    });
-                }
+                element.css({
+                    width:newWidth + 'px'
+                });
+
+                scope.nextElementSibling.css({
+                    width: maxWidth - newWidth + 'px'
+                });
             }
 
             function mouseup() {
                 $document.off('mousemove', mousemove);
                 $document.off('mouseup', mouseup);
-                scope.canResize = false;
+                scope.isResizing = false;
             }
         }
     }
-});
+})

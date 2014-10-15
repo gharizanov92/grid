@@ -1,18 +1,16 @@
 <div style="width: {{width}}">
 
     <div style="width: {{width}}; height:{{height}}; overflow:scroll">
-    <!-- <div> -->
         <table class="table table-striped table-hover table-bordered table-condensed table-responsive" style="table-layout: fixed;">
             <thead>
                 <tr>
                     <th id="column" ng-repeat="column in columns" style="width:{{column.width}}" resizable>
-                        <!--<div class="resize-handle" />-->
                         <span style="cursor: pointer" ng-bind = "column.header"/>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat = "row in data" compile="rowtemplate">
+                <tr ng-repeat = "row in data" compile="rowtemplate" style="overflow-wrap: break-word;">
                 </tr>
             </tbody>
         </table>
