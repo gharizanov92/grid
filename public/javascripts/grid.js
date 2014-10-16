@@ -66,14 +66,14 @@ gridModule.directive('grid', function() {
                         width: column.width,
                         field: column.binding,
                         //template:'{{row[column.field]}}'
-                        template:'{{row' + '.' + column.binding + '}}'
+                        template:'<div style=\"white-space: nowrap;overflow: hidden;text-overflow: ellipsis\" ng-bind="row' + '.' + column.binding + '"/>'
                     });
                 } else {
                     $scope.columns.push({
                         header: column.header,
                         width: column.width,
                         field: column.binding,
-                        template:'<div>' + column.template + '</div>'
+                        template:'<div style=\"white-space: nowrap;overflow: hidden;text-overflow: ellipsis\">' + column.template + '</div>'
                     });
                 }
             };
@@ -82,6 +82,15 @@ gridModule.directive('grid', function() {
                 $scope.data = undefined;
                 $scope.fetchData();
             });
+
+            $scope.rowSelected = function(event){
+                console.log(event.srcElement);
+                console.log(event.srcElement.parentElement.parentElement);
+                angular.element(event.srcElement.parentElement.parentElement).css({
+                    "background-color": "rgb(209, 231, 238)"
+                })
+                //background-color: rgb(209, 231, 238);
+            }
 
             $http({method: 'GET', url: '/books/total'}).
                 success(function(total) {
@@ -93,7 +102,7 @@ gridModule.directive('grid', function() {
         link:function(scope, element, attrs){
             var rowtemplate = "";
             for(var column in scope.columns){
-                rowtemplate += "<td width='" + scope.columns[column].width + "' style=\"white-space: nowrap;overflow: hidden;text-overflow: ellipsis\">" + scope.columns[column].template + "</td>" + "\n";
+                rowtemplate += "<td width='" + scope.columns[column].width + "'>" + scope.columns[column].template + "</td>" + "\n";
                 /*rowtemplate += "<td>" + scope.columns[column].template + "</td>" + "\n";*/
             }
             scope.rowtemplate = rowtemplate;

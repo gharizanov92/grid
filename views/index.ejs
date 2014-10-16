@@ -14,8 +14,8 @@
             <grid url="/books" on-data-requested="fetchData" width="1200px" height="600px">
                 <column header="Title" binding="bookTitle" width="450px"></column>
                 <column header="Published" binding="datePublished" width="100px"></column>
-                <column header="Publisher" binding="publisher" ><div>{{row.publisher.name}}</div></column>
-                <column header="Author" binding="authors" ><div>{{row.authors[0].name}}</div></column>
+                <column header="Publisher" binding="publisher">{{row.publisher.name}}</column>
+                <column header="Author" binding="authors">{{row.authors[0].name}}</column>
                 <column header="Edit" binding="id" >
                     <a href="#" style="display:block; padding-top:4px; color: #428bca" ng-click="update(row._id)">
                         <span class="glyphicon glyphicon-pencil"></span> Edit
