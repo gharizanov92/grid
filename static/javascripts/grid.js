@@ -136,6 +136,7 @@ gridModule.directive('resizable', function($document, $window){
                     if($scope.nextElementSibling[0] != undefined){
                         $scope.nextElementSiblingWidth = $scope.nextElementSibling[0].children[0].offsetWidth + $scope.nextElementSibling[0].children[0].offsetLeft * 2 + 11;
                     }
+                    //magic numbers are for better positioning of the resize handle. Uncomment border for debugging
                     $scope.handle.css({
                         display:"inline-block",
                         /*border: "1px solid red",*/
@@ -148,6 +149,7 @@ gridModule.directive('resizable', function($document, $window){
                     });
                     
                     $element.append($scope.handle);
+                    //creates the handle
                     $compile($scope.handle)($scope);
                 });
         },

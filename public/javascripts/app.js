@@ -9,6 +9,7 @@ app.controller("controller", ["$scope", "$http", function($scope, $http){
             success(function(data) {
                 result(data);
             });
+        $scope.selected = undefined;
     };
 
     $scope.mockDataSource = function(pageSize, currentPage, result){
@@ -25,9 +26,13 @@ app.controller("controller", ["$scope", "$http", function($scope, $http){
         result(data);
     };
 
+    $scope.getSelected = function(selection){
+        //get data from server
+        return $scope.selected;
+    }
+
     $scope.update = function(arg){
         console.log(arg);
-
     }
 }]);
 

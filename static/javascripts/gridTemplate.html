@@ -10,7 +10,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat = "row in data" compile="rowtemplate" style="overflow-wrap: break-word;">
+                <tr ng-repeat = "row in data" id="row-{{index}}" compile="rowtemplate" style="overflow-wrap: break-word;" ng-click="test($event)">
                 </tr>
             </tbody>
         </table>

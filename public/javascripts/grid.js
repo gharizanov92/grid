@@ -33,6 +33,7 @@ gridModule.directive('grid', function() {
             url: '@',
             width: '@',
             height: '@',
+            selected: '@',
             onDataRequested: '&'
         },
         replace: true,
@@ -83,12 +84,15 @@ gridModule.directive('grid', function() {
                 $scope.fetchData();
             });
 
-            $scope.rowSelected = function(event){
-                console.log(event.srcElement);
-                console.log(event.srcElement.parentElement.parentElement);
-                angular.element(event.srcElement.parentElement.parentElement).css({
-                    "background-color": "rgb(209, 231, 238)"
-                })
+            $scope.rowSelected = function(event, rowdata){
+                //console.log(event.srcElement);
+
+                if($scope.selected != undefined){
+                    $scope.$parent[$scope.selected] = rowdata;
+                }
+
+                console.log(angular.element(event.srcElement.parentElement.parentElement));
+                
                 //background-color: rgb(209, 231, 238);
             }
 
